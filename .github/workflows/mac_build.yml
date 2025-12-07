@@ -23,15 +23,16 @@ jobs:
           pip install --upgrade pip setuptools wheel
           pip install -r requirements.txt
 
-      - name: Download GGUF model from Hugging Face
-        run: |
-          mkdir -p backend/llm_models
-          curl -L -o backend/llm_models/mistral-7b-instruct-v0.1.Q4_K_M.gguf \
-          https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/resolve/main/mistral-7b-instruct-v0.1.Q4_K_M.gguf
-
       - name: Build .app with PyInstaller
         run: |
           pyinstaller forensic_summarizer.spec
+
+      - name: Download GGUF model into .app bundle
+        run: |
+          APP_RESOURCES_DIR="dist/forensic_summarizer.app/Contents/Resources/backend/llm_models"
+          mkdir -p "$APP_RESOURCES_DIR"
+          curl -L -o "$APP_RESOURCES_DIR/mistral-7b-instruct-v0.1.Q4_K_M.gguf" \
+            "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/resolve/main/mistral-7b-instruct-v0.1.Q4_K_M.gguf"
 
       - name: Zip the .app bundle
         run: |
