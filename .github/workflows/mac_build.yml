@@ -1,0 +1,39 @@
+name: build-macos-app
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Python dependencies
+        run: |
+          pip install --upgrade pip setuptools wheel
+          pip install -r requirements.txt
+
+      - name: Build .app with PyInstaller
+        run: |
+          pyinstaller forensic_summarizer.spec
+
+      - name: Zip the .app bundle
+        run: |
+          cd dist
+          zip -r forensic_summarizer.app.zip forensic_summarizer.app
+
+      - name: Upload .app.zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: forensic_summarizer-app-macos
+          path: dist/forensic_summarizer.app.zip
