@@ -9,10 +9,10 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[
-        # 🔽 Додаємо модель всередину .app
+        # ✅ Додаємо модель як зовнішній файл (НЕ binary)
         ('backend/llm_models/mistral-7b-instruct-v0.1.Q4_K_M.gguf', 'backend/llm_models'),
 
-        # 🔽 Додаємо шаблони промптів
+        # ✅ Додаємо шаблони промптів
         ('prompts/*.txt', 'prompts'),
     ],
     hiddenimports=[],
@@ -41,7 +41,7 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=False,  # ✅ Якщо ти хочеш GUI без консолі
+    console=True,  # ✅ залишаємо консоль увімкненою для стабільного білду
     disable_windowed_traceback=False,
     target_arch=None,
     codesign_identity=None,
