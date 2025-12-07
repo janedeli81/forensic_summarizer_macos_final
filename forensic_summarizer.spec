@@ -19,27 +19,14 @@ a = Analysis(
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,
-    noarchive=True  # <-- важливо: не створює .pkg з усім
+    noarchive=True
 )
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
-exe = EXE(
+coll = COLLECT(
     pyz,
     a.scripts,
-    [],
-    [],
-    [],
-    name='forensic_summarizer',
-    debug=False,
-    bootloader_ignore_signals=False,
-    strip=False,
-    upx=True,
-    console=True,
-)
-
-coll = COLLECT(
-    exe,
     a.binaries,
     a.zipfiles,
     a.datas,
