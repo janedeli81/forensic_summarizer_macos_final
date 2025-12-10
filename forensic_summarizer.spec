@@ -9,22 +9,27 @@ from PyInstaller.utils.hooks import (
 
 block_cipher = None
 
-project_root = Path(__file__).resolve().parent
+# У .spec файлі використовуємо поточну директорію, а не __file__
+project_root = Path(".").resolve()
 
-# Data files: prompts + data files from ctransformers (if any)
+# ---------- data files ----------
 datas = [
-    # All prompt templates
+    # Вся папка prompts цілком
     (str(project_root / "prompts"), "prompts"),
 ]
 
-# Include any non-binary data shipped with ctransformers
+# Дані самого ctransformers (словники, конфіги і т.п.)
 datas += collect_data_files("ctransformers")
 
-# Native libraries for ctransformers (this is what was missing on the client's Mac)
+# ---------- native libs ----------
+# Тут якраз збираються libctransformers.dylib та інші
 binaries = collect_dynamic_libs("ctransformers")
 
-# Make sure all backend and ctransformers submodules are included
-hiddenimports = collect_submodules("backend") + collect_submodules("ctransformers")
+# ---------- hidden imports ----------
+hiddenimports = (
+    collect_submodules("backend") +
+    collect_submodules("ctransformers")
+)
 
 a = Analysis(
     ['main.py'],
