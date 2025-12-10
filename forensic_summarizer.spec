@@ -9,26 +9,34 @@ from PyInstaller.utils.hooks import (
 
 block_cipher = None
 
-# У .spec файлі використовуємо поточну директорію, а не __file__
+# Use current working directory as project root
 project_root = Path(".").resolve()
+prompts_dir = project_root / "prompts"
 
 # ---------- data files ----------
+# Explicitly add each prompt file so they are definitely bundled
 datas = [
-    # Вся папка prompts цілком
-    (str(project_root / "prompts"), "prompts"),
+    (str(prompts_dir / "pj_old.txt"), "prompts"),
+    (str(prompts_dir / "vc.txt"), "prompts"),
+    (str(prompts_dir / "pv.txt"), "prompts"),
+    (str(prompts_dir / "reclass.txt"), "prompts"),
+    (str(prompts_dir / "ujd.txt"), "prompts"),
+    (str(prompts_dir / "tll.txt"), "prompts"),
+    (str(prompts_dir / "unknown.txt"), "prompts"),
+    (str(prompts_dir / "final_report.txt"), "prompts"),
 ]
 
-# Дані самого ctransformers (словники, конфіги і т.п.)
+# ctransformers data files (vocab, configs, etc.)
 datas += collect_data_files("ctransformers")
 
 # ---------- native libs ----------
-# Тут якраз збираються libctransformers.dylib та інші
+# This collects libctransformers.dylib and other native libs
 binaries = collect_dynamic_libs("ctransformers")
 
 # ---------- hidden imports ----------
 hiddenimports = (
-    collect_submodules("backend") +
-    collect_submodules("ctransformers")
+    collect_submodules("backend")
+    + collect_submodules("ctransformers")
 )
 
 a = Analysis(
