@@ -1,18 +1,37 @@
-# forensic_summarizer.spec
-
 # -*- mode: python ; coding: utf-8 -*-
+
+from pathlib import Path
+from PyInstaller.utils.hooks import (
+    collect_dynamic_libs,
+    collect_data_files,
+    collect_submodules,
+)
 
 block_cipher = None
 
+project_root = Path(__file__).resolve().parent
+
+# Data files: prompts + data files from ctransformers (if any)
+datas = [
+    # All prompt templates
+    (str(project_root / "prompts"), "prompts"),
+]
+
+# Include any non-binary data shipped with ctransformers
+datas += collect_data_files("ctransformers")
+
+# Native libraries for ctransformers (this is what was missing on the client's Mac)
+binaries = collect_dynamic_libs("ctransformers")
+
+# Make sure all backend and ctransformers submodules are included
+hiddenimports = collect_submodules("backend") + collect_submodules("ctransformers")
+
 a = Analysis(
     ['main.py'],
-    pathex=[],
-    binaries=[],
-    datas=[
-        # Промпти беремо як data (це невеликі файли)
-        ('prompts/*.txt', 'prompts'),
-    ],
-    hiddenimports=[],
+    pathex=[str(project_root)],
+    binaries=binaries,
+    datas=datas,
+    hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -20,6 +39,7 @@ a = Analysis(
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,
+    noarchive=False,
 )
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
@@ -38,7 +58,7 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=False,  # GUI app, без консолі
+    console=False,  # GUI app
     disable_windowed_traceback=False,
     target_arch=None,
     codesign_identity=None,
