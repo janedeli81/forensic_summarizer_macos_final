@@ -60,7 +60,7 @@ class UploadWindow(QWidget):
         zip_path, _ = QFileDialog.getOpenFileName(self, "Selecteer ZIP-bestand", "", "ZIP bestanden (*.zip)")
         if zip_path:
             self.output_area.append(f"✅ Geselecteerd bestand: {zip_path}")
-            QMessageBox.information(self, "Upload voltooid", "Bestand succesvol geselecteerd en klaar voor verwerking.")
+            QMessageBox.information(self, "Upload  voltooid", "Bestand succesvol geselecteerd en klaar voor verwerking.")
 
 
 # Якщо хочеш окремо запускати:
