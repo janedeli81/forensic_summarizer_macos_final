@@ -27,8 +27,9 @@ def get_llm():
         _llm = AutoModelForCausalLM.from_pretrained(
             model_dir,
             model_file=model_file,
-            model_type="mistral",  # or "llama" for llama-type models
-            max_new_tokens=1024,
+            model_type="llama",  # or "llama" for llama-type models
+            gpu_layers=1,
+            max_new_tokens=512,
             context_length=4096,
         )
     return _llm

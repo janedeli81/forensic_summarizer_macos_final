@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-MODEL_PATH = Path(__file__).parent.parent / "models" / "mistral-7b.Q4_K_M.gguf"
+MODEL_PATH = Path(__file__).parent.parent / "models" / "tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf"
 
 try:
     from llama_cpp import Llama

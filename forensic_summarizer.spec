@@ -11,20 +11,24 @@ block_cipher = None
 
 # Use current working directory as project root
 project_root = Path(".").resolve()
-prompts_dir = project_root / "prompts"
+backend_dir = project_root / "backend"
+prompts_dir = backend_dir / "prompts"
+llm_models_dir = backend_dir / "llm_models"
 
 # ---------- data files ----------
 # Explicitly add each prompt file so they are definitely bundled
+# They will end up inside the bundle under backend/prompts/
 datas = [
-    (str(prompts_dir / "pj_old.txt"), "prompts"),
-    (str(prompts_dir / "vc.txt"), "prompts"),
-    (str(prompts_dir / "pv.txt"), "prompts"),
-    (str(prompts_dir / "reclass.txt"), "prompts"),
-    (str(prompts_dir / "ujd.txt"), "prompts"),
-    (str(prompts_dir / "tll.txt"), "prompts"),
-    (str(prompts_dir / "unknown.txt"), "prompts"),
-    (str(prompts_dir / "final_report.txt"), "prompts"),
+    (str(prompts_dir / "pj_old.txt"), "backend/prompts"),
+    (str(prompts_dir / "vc.txt"), "backend/prompts"),
+    (str(prompts_dir / "pv.txt"), "backend/prompts"),
+    (str(prompts_dir / "reclass.txt"), "backend/prompts"),
+    (str(prompts_dir / "ujd.txt"), "backend/prompts"),
+    (str(prompts_dir / "tll.txt"), "backend/prompts"),
+    (str(prompts_dir / "unknown.txt"), "backend/prompts"),
+    (str(prompts_dir / "final_report.txt"), "backend/prompts"),
 ]
+
 
 # ctransformers data files (vocab, configs, etc.)
 datas += collect_data_files("ctransformers")

@@ -6,27 +6,26 @@ from pathlib import Path
 
 def get_base_dir() -> Path:
     """
-    Base dir for resources that йдуть разом із кодом (prompts, тощо).
-    Працює і для звичайного запуску, і для PyInstaller (_MEIPASS).
+    Return the directory of the backend package (where config.py lives).
+    This works both in normal runs and inside a PyInstaller bundle,
+    because PyInstaller sets __file__ to the correct location.
     """
-    if hasattr(sys, "_MEIPASS"):
-        return Path(sys._MEIPASS)
     return Path(__file__).resolve().parent
 
 
 BASE_DIR = get_base_dir()
 PROJECT_ROOT = BASE_DIR.parent
 
-# Директорії в проекті
-PROMPTS_DIR = PROJECT_ROOT / "prompts"
+# Project directories
+PROMPTS_DIR = BASE_DIR / "prompts"  # backend/prompts
 OUTPUT_DIR = PROJECT_ROOT / "output_summaries"
 EXTRACTED_DIR = PROJECT_ROOT / "extracted_documents"
 
-# Фінальний звіт
+# Final report paths
 FINAL_REPORT_PATH = OUTPUT_DIR / "final_report.txt"
 FINAL_REPORT_PDF_PATH = OUTPUT_DIR / "final_report.pdf"
 
-# Шаблони промптів
+# Prompt templates
 PROMPT_FILES = {
     "PJ": PROMPTS_DIR / "pj_old.txt",
     "VC": PROMPTS_DIR / "vc.txt",
@@ -37,28 +36,28 @@ PROMPT_FILES = {
     "UNKNOWN": PROMPTS_DIR / "unknown.txt",
 }
 
-# MAX символів на chunk
+# Max characters per chunk
 MAX_CHARS_PER_CHUNK = 5000
 
 
 def get_model_path() -> Path:
     """
-    Повертає шлях до GGUF-моделі.
+    Return the path to the GGUF model.
 
-    - При звичайному запуску (з коду) -> backend/llm_models/...
-    - При запуску з .app (PyInstaller) -> inside .app/Contents/Resources/backend/llm_models/...
+    - In normal/dev runs: <project_root>/backend/llm_models/<model_name>
+    - In macOS .app (PyInstaller bundle): <Contents>/Resources/backend/llm_models/<model_name>
     """
-    model_name = "mistral-7b-instruct-v0.1.Q4_K_M.gguf"
+    model_name = "tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf"
 
-    # Якщо запущено з .app (PyInstaller bundle)
+    # Running from macOS .app bundle
     if getattr(sys, "frozen", False) and sys.platform == "darwin":
-        # /.../forensic_summarizer.app/Contents/MacOS/forensic_summarizer
+        # .../forensic_summarizer.app/Contents/MacOS/forensic_summarizer
         exe_path = Path(sys.executable).resolve()
-        contents_dir = exe_path.parent.parent  # .. / Contents
+        contents_dir = exe_path.parent.parent  # -> .../Contents
         resources_dir = contents_dir / "Resources"
         return resources_dir / "backend" / "llm_models" / model_name
 
-    # Звичайний запуск (dev / Windows / macOS з коду)
+    # Normal (dev / Windows / macOS from source)
     return PROJECT_ROOT / "backend" / "llm_models" / model_name
 
 

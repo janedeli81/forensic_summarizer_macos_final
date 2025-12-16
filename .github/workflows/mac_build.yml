@@ -26,7 +26,6 @@ jobs:
           python -m pip uninstall -y ctransformers
           python -m pip install --no-binary ctransformers ctransformers
 
-
       - name: Build .app with PyInstaller
         run: |
           pyinstaller forensic_summarizer.spec
@@ -35,8 +34,8 @@ jobs:
         run: |
           APP_RESOURCES_DIR="dist/forensic_summarizer.app/Contents/Resources/backend/llm_models"
           mkdir -p "$APP_RESOURCES_DIR"
-          curl -L -o "$APP_RESOURCES_DIR/mistral-7b-instruct-v0.1.Q4_K_M.gguf" \
-            "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/resolve/main/mistral-7b-instruct-v0.1.Q4_K_M.gguf"
+          curl -L -o "$APP_RESOURCES_DIR/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf" \
+            "https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf"
 
       - name: Zip the .app bundle
         run: |
