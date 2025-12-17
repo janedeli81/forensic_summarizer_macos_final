@@ -9,6 +9,10 @@ jobs:
   build:
     runs-on: macos-latest
 
+    # Потрібно, щоб створювати релізи та завантажувати assets
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -42,8 +46,25 @@ jobs:
           cd dist
           zip -r forensic_summarizer.app.zip forensic_summarizer.app
 
-      - name: Upload .app.zip
-        uses: actions/upload-artifact@v4
+      # Створюємо draft-реліз
+      - name: Create GitHub Release (draft)
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: forensic_summarizer-app-macos
-          path: dist/forensic_summarizer.app.zip
+          tag_name: mac-build-${{ github.run_number }}
+          release_name: "macOS build ${{ github.run_number }}"
+          draft: true
+          prerelease: false
+
+      # Завантажуємо forensic_summarizer.app.zip як asset релізу
+      - name: Upload .app.zip to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/forensic_summarizer.app.zip
+          asset_name: forensic_summarizer.app.zip
+          asset_content_type: application/zip
