@@ -109,7 +109,7 @@ class ZipUploadWindow(QWidget):
     # Stage 1: classification
     # ------------------------
     def start_classification(self):
-        self.log("🔎 Detecting document types for all files...")
+        self.log("🔎Detecting document types for all files...")
 
         # Show indeterminate progress while we classify
         self.progress_bar.setMaximum(0)

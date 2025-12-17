@@ -74,7 +74,7 @@ def generate(prompt: str) -> str:
     return llm(prompt).strip()
 
 
-def summarize_document(doc_type: str, text: str) -> str:
+def summarize_document(doc_type: str, text: str, progress_callback=None) -> str:
     template = load_prompt(doc_type)
     chunks = chunk_text(text)
 
