@@ -71,18 +71,23 @@ jobs:
 
           echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> "$GITHUB_ENV"
 
-      - name: Detect signing identity
+      - name: Detect signing identity (debug)
         run: |
           set -euo pipefail
           KEYCHAIN_PATH="${KEYCHAIN_PATH}"
 
+          echo "=== Available code signing identities in temporary keychain ==="
+          security find-identity -p codesigning -v "$KEYCHAIN_PATH" || true
+
+          echo "=== Available certificates in temporary keychain (names) ==="
+          security find-certificate -a "$KEYCHAIN_PATH" | grep "labl" || true
+
           SIGN_IDENTITY="$(security find-identity -p codesigning -v "$KEYCHAIN_PATH" \
-            | grep -m 1 "Developer ID Application" \
-            | sed -E 's/.*"(.+)".*/\1/')"
+            | awk -F\" '/Developer ID Application/ {print $2; exit}')"
 
           if [ -z "${SIGN_IDENTITY}" ]; then
             echo "ERROR: No 'Developer ID Application' identity found in keychain."
-            security find-identity -p codesigning -v "$KEYCHAIN_PATH" || true
+            echo "Most likely the .p12 is not a Developer ID Application cert, or it does not include the private key."
             exit 1
           fi
 
