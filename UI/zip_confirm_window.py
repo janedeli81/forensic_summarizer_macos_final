@@ -21,7 +21,7 @@ class ZipConfirmWindow(QWidget):
 
         layout = QVBoxLayout()
 
-        title = QLabel("📄 Bevestig documenten in ZIP-bestand")
+        title = QLabel("Bevestig documenten in ZIP-bestand")
         title.setFont(QFont("Arial", 18))
         layout.addWidget(title)
 
@@ -75,7 +75,7 @@ class ZipConfirmWindow(QWidget):
                 self.scroll_layout.addWidget(block)
 
             except Exception as e:
-                print(f"❌ Fout bij laden van {json_path.name}: {e}")
+                print(f"Fout bij laden van {json_path.name}: {e}")
 
     def create_file_block(self, filename, doc_type, workflow):
         block = QFrame()

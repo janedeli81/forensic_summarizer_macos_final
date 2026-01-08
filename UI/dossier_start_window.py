@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
 
-from UI.dossier_detail_window import DossierDetailWindow  # 🆕 імпорт наступного вікна
+from UI.dossier_detail_window import DossierDetailWindow  # імпорт наступного вікна
 
 class DossierStartWindow(QWidget):
     def __init__(self, documents=None):
@@ -49,11 +49,11 @@ class DossierStartWindow(QWidget):
 
         button_layout = QHBoxLayout()
 
-        self.btn_leeg = QPushButton("🗎 Leeg Dossier Aanmaken")
+        self.btn_leeg = QPushButton("Leeg Dossier Aanmaken")
         self.btn_leeg.setEnabled(False)
         self.btn_leeg.clicked.connect(self.handle_leeg)
 
-        self.btn_zip = QPushButton("📦 Dossier Aanmaken met Zip")
+        self.btn_zip = QPushButton("Dossier Aanmaken met Zip")
         self.btn_zip.setEnabled(False)
         self.btn_zip.clicked.connect(self.handle_zip)
 

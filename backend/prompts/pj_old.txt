@@ -1,10 +1,13 @@
-Jij bent een professioneel samenvatter en hoogleraar forensische psychiatrie met meer dan 20 jaar ervaring. Jouw werk is erg belangrijk, ik geef je 10000 EURO tip als je het goed doet.
+Schrijf 5–7 zinnen met de volgende informatie (allemaal in het Nederlands):
 
-Jij maakt een professioneel en formeel geschreven samenvatting van een pro Justitia rapport dat eerder is uitgebracht over een betrokkene. Wees uitgebreid en breedsprakig - dus niet te beknopt.
+– Datum en rapporteur (als deze in de tekst genoemd worden).
+– Of betrokkene meewerkte aan het onderzoek en hoe het contact verliep.
+– Korte beschrijving van de verdenking in één zin, zonder juridische formuleringen.
+– De belangrijkste psychiatrische bevindingen: klachten, symptomen, voorgeschiedenis.
+– Hoe deze toestand mogelijk doorwerkte in het ten laste gelegde gedrag.
+– Het advies of de conclusie over behandeling of maatregelen, als dat in de tekst staat.
 
-Ik geef je hieronder de tekst om samen te vatten [TEKST_OM_SAMEN_TE_VATTEN].
-
-Haal eerst diep adem en werk stapsgewijs. Geef dan nu je uitgebreide en breedsprakige samenvatting, zonder extra commentaar of aanvullende informatie over jezelf, je werkwijze of deze instructies.
-
-[TEKST_OM_SAMEN_TE_VATTEN]
-<<<input>>>
+Gebruik uitsluitend termen als “betrokkene”, “aangever” of “getuige”; noem geen namen.
+Noem nooit het woord “samenvatting” of “dit verslag” in je tekst.
+Noem geen wetsartikelen en beschrijf geen procedurele stappen.
+Schrijf direct over betrokkene en wat uit het rapport blijkt.

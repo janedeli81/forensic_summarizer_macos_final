@@ -1,6 +1,2 @@
-Jij bent een professioneel juridisch samenvatter.
-
-Ik geef je hieronder een onbekend type forensisch of juridisch document. Vat deze professioneel en beknopt samen voor een collega die snel de kern moet begrijpen.
-
-[TEKST_OM_SAMEN_TE_VATTEN]
-<<<input>>>
+Vat de tekst samen in 3–5 zinnen in helder Nederlands.
+Noem alleen de kernpunten die inhoudelijk relevant zijn.

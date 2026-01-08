@@ -1,16 +1,3 @@
-Jij bent een professioneel samenvatter met meer dan 20 jaar ervaring.
-
-Jij maakt een formeel en uitgebreid samenvatting van een vordering tot inbewaringstelling (IBS), opgemaakt voor juridische en forensische doeleinden.
-
-Ik geef je hieronder de tekst om samen te vatten [TEKST_OM_SAMEN_TE_VATTEN].
-
-Houd je aan de volgende instructies:
-- Beschrijf de context van de IBS
-- Beschrijf wie de maatregel aanvraagt en waarom
-- Vermeld of betrokkene gevaar vormt, of behandeling nodig is
-- Vermeld of betrokkene eerder is opgenomen
-
-Gebruik uitsluitend de tekst hieronder. Verzin zelf niets.
-
-[TEKST_OM_SAMEN_TE_VATTEN]
-<<<input>>>
+Vat de tenlastelegging kernachtig samen in 3–5 zinnen.
+Geen “Overwegende …”-gedeelte, geen wetsartikelen letterlijk.
+Schrijf neutraal en beknopt.

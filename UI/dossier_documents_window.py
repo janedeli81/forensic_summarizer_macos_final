@@ -5,7 +5,7 @@ from pathlib import Path
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton,
     QVBoxLayout, QHBoxLayout, QTableWidget, QTableWidgetItem,
-    QMessageBox
+    QMessageBox, QDialog, QTextEdit
 )
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import QDateTime, Qt
@@ -18,7 +18,7 @@ class DossierDocumentsWindow(QWidget):
     def __init__(self, documents=None):
         super().__init__()
         self.setWindowTitle("Documenten in Dossier")
-        self.setGeometry(200, 200, 950, 500)
+        self.setGeometry(200, 200, 1100, 520)
 
         self.layout = QVBoxLayout()
 
@@ -27,10 +27,12 @@ class DossierDocumentsWindow(QWidget):
         self.layout.addWidget(title)
 
         self.table = QTableWidget()
-        self.table.setColumnCount(6)
+
+        # ✅ +1 column for viewing summary
+        self.table.setColumnCount(7)
         self.table.setHorizontalHeaderLabels([
             "Bestandsnaam", "Document Type", "Workflow",
-            "Status", "Datum", "Actie"
+            "Status", "Datum", "Samenvatting", "Actie"
         ])
         self.table.horizontalHeader().setStretchLastSection(True)
         self.layout.addWidget(self.table)
@@ -91,15 +93,56 @@ class DossierDocumentsWindow(QWidget):
                 dt = QDateTime.fromSecsSinceEpoch(int(json_path.stat().st_mtime))
                 self.table.setItem(row, 4, QTableWidgetItem(dt.toString("dd MMMM yyyy HH:mm")))
 
+                # ✅ View summary button (expects *_summary.txt next to *_summary.json)
+                summary_txt_path = json_path.with_suffix(".txt")  # <stem>_summary.txt
+                view_btn = QPushButton("Bekijk")
+                view_btn.clicked.connect(
+                    lambda _, p=summary_txt_path, t=filename: self.view_summary(p, t)
+                )
+                if not summary_txt_path.exists():
+                    view_btn.setEnabled(False)
+                    view_btn.setToolTip("Geen samenvatting gevonden (TXT ontbreekt).")
+                self.table.setCellWidget(row, 5, view_btn)
+
+                # Delete button
                 delete_btn = QPushButton("Verwijderen")
                 delete_btn.setStyleSheet("color: red; font-weight: bold;")
                 delete_btn.clicked.connect(
                     lambda _, r=row, f=json_path: self.remove_row(r, f)
                 )
-                self.table.setCellWidget(row, 5, delete_btn)
+                self.table.setCellWidget(row, 6, delete_btn)
 
             except Exception as e:
                 QMessageBox.warning(self, "Fout", f"Kan JSON niet laden:\n{json_path.name}\n{e}")
+
+    def view_summary(self, txt_path: Path, filename: str):
+        if not txt_path.exists():
+            QMessageBox.warning(self, "Niet gevonden", f"Geen samenvatting gevonden:\n{txt_path.name}")
+            return
+
+        try:
+            content = txt_path.read_text(encoding="utf-8", errors="ignore")
+        except Exception as e:
+            QMessageBox.critical(self, "Fout", f"Kan bestand niet lezen:\n{txt_path.name}\n{e}")
+            return
+
+        dlg = QDialog(self)
+        dlg.setWindowTitle(f"Samenvatting – {filename}")
+        dlg.resize(900, 700)
+
+        layout = QVBoxLayout(dlg)
+
+        editor = QTextEdit()
+        editor.setReadOnly(True)
+        editor.setPlainText(content)
+        layout.addWidget(editor)
+
+        close_btn = QPushButton("Sluiten")
+        close_btn.clicked.connect(dlg.close)
+        layout.addWidget(close_btn)
+
+        dlg.setLayout(layout)
+        dlg.exec_()
 
     def remove_row(self, row, filepath: Path):
         reply = QMessageBox.question(
@@ -108,7 +151,7 @@ class DossierDocumentsWindow(QWidget):
         )
         if reply == QMessageBox.Yes:
             try:
-                txt_version = filepath.with_suffix(".txt")
+                txt_version = filepath.with_suffix(".txt")  # <stem>_summary.txt
                 if filepath.exists():
                     filepath.unlink()
                 if txt_version.exists():

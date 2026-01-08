@@ -21,7 +21,7 @@ class DossierDetailWindow(QWidget):
 
         layout = QVBoxLayout()
 
-        title = QLabel("📁 Dossier Details")
+        title = QLabel("Dossier Details")
         title.setFont(QFont("Arial", 20))
         layout.addWidget(title)
 
@@ -63,13 +63,13 @@ class DossierDetailWindow(QWidget):
 
         button_layout = QHBoxLayout()
 
-        self.edit_btn = QPushButton("✏️ Details handmatig aanpassen")
+        self.edit_btn = QPushButton("Details handmatig aanpassen")
         self.edit_btn.clicked.connect(self.toggle_edit)
 
-        self.extract_btn = QPushButton("🧠 Details uit bestand lezen (Beta)")
+        self.extract_btn = QPushButton("Details uit bestand lezen (Beta)")
         self.extract_btn.clicked.connect(self.open_documents_window)
 
-        self.delete_btn = QPushButton("🗑️ Dossier verwijderen")
+        self.delete_btn = QPushButton("Dossier verwijderen")
         self.delete_btn.clicked.connect(self.confirm_delete)
 
         for btn in [self.edit_btn, self.extract_btn, self.delete_btn]:
@@ -123,7 +123,7 @@ class DossierDetailWindow(QWidget):
         if self.edit_mode:
             self.edit_btn.setText("✅ Opslaan")
         else:
-            self.edit_btn.setText("✏️ Details handmatig aanpassen")
+            self.edit_btn.setText("Details handmatig aanpassen")
             QMessageBox.information(self, "Opgeslagen", "Wijzigingen zijn opgeslagen.")
 
     def open_documents_window(self):

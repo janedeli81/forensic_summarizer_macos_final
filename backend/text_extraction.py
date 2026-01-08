@@ -1,7 +1,8 @@
-# text_extraction.py
+# backend/text_extraction.py
 
 from pathlib import Path
 from typing import Optional
+import re
 
 import docx
 import pdfplumber
@@ -14,13 +15,14 @@ def extract_text(path: Path) -> Optional[str]:
     """
     suffix = path.suffix.lower()
     if suffix == ".docx":
-        return _extract_docx(path)
+        text = _extract_docx(path)
     elif suffix == ".pdf":
-        return _extract_pdf(path)
+        text = _extract_pdf(path)
     elif suffix in {".txt", ".md"}:
-        return path.read_text(encoding="utf-8", errors="ignore")
+        text = path.read_text(encoding="utf-8", errors="ignore")
     else:
         return None
+    return _sanitize(text)
 
 
 def _extract_docx(path: Path) -> str:
@@ -37,3 +39,11 @@ def _extract_pdf(path: Path) -> str:
             if page_text:
                 text_parts.append(page_text)
     return "\n".join(text_parts)
+
+
+def _sanitize(text: str) -> str:
+    t = text or ""
+    t = re.sub(r"\r\n", "\n", t)
+    t = re.sub(r"\n{3,}", "\n\n", t)
+    t = re.sub(r"Pagina\s+\d+\s+van\s+\d+\s*", "", t, flags=re.I)
+    return t.strip()

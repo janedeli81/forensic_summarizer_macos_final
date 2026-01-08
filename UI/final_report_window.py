@@ -22,7 +22,7 @@ class FinalReportWindow(QWidget):
 
         self.layout = QVBoxLayout()
 
-        self.title = QLabel("🧠 Rapport wordt gegenereerd...")
+        self.title = QLabel("Rapport wordt gegenereerd...")
         self.title.setFont(QFont("Arial", 20))
         self.layout.addWidget(self.title)
 
@@ -34,12 +34,12 @@ class FinalReportWindow(QWidget):
         self.result_box.hide()
         self.layout.addWidget(self.result_box)
 
-        self.view_button = QPushButton("📄 Bekijk gegenereerd rapport")
+        self.view_button = QPushButton("Bekijk gegenereerd rapport")
         self.view_button.setEnabled(False)
         self.view_button.clicked.connect(self.open_generated_file)
         self.layout.addWidget(self.view_button)
 
-        self.export_button = QPushButton("📥 Download rapport als PDF")
+        self.export_button = QPushButton("Download rapport als PDF")
         self.export_button.setEnabled(False)
         self.export_button.clicked.connect(self.save_pdf_copy)
         self.layout.addWidget(self.export_button)
