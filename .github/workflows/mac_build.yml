@@ -27,7 +27,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install -r requirements.txt
-          # Reinstall ctransformers from source for Apple Silicon
+          # Reinstall ctransformers from source for Apple Silicon (Metal)
           python -m pip uninstall -y ctransformers
           python -m pip install --no-binary ctransformers ctransformers
 
@@ -35,7 +35,7 @@ jobs:
         run: |
           pyinstaller forensic_summarizer.spec
 
-            - name: Download GGUF model into .app bundle
+      - name: Download GGUF model into .app bundle
         run: |
           APP_RESOURCES_DIR="dist/forensic_summarizer.app/Contents/Resources/backend/llm_models"
           mkdir -p "$APP_RESOURCES_DIR"
