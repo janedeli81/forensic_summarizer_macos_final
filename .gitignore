@@ -23,3 +23,9 @@ Thumbs.db
 
 # Local LLM model files (not tracked in git)
 backend/llm_models/
+
+output_summaries/
+extracted_documents/
+rapport.pdf
+dist/
+
