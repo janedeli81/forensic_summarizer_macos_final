@@ -13,10 +13,11 @@ from backend.classifiers import classify_document
 from backend.process_zip import extract_basic_meta, guess_workflow
 from backend.summarizer import summarize_document
 from backend.text_extraction import extract_text
+from backend.model_manager import ensure_model_ready
 
 
 class ClassificationWorker(QThread):
-    """Stage 1: extract text + detect doc types for *all* documents first."""
+    """Stage 1: Extract text + detect doc types for all documents first."""
 
     progress = pyqtSignal(str)
     finished = pyqtSignal(list)  # List[dict]
@@ -59,7 +60,7 @@ class ClassificationWorker(QThread):
 
 
 class SummarizationWorker(QThread):
-    """Stage 2: summarize one document (doc_type/text can be precomputed)."""
+    """Stage 2: Summarize one document (doc_type/text can be precomputed)."""
 
     progress = pyqtSignal(str)
     finished = pyqtSignal(dict)
@@ -122,7 +123,10 @@ class SummarizationWorker(QThread):
                 doc_type = classify_document(extracted_path, text)
             self.progress.emit(f"🔍 Document type: {doc_type}")
 
-            # 3) Summarize with streaming logs
+            # 3) Ensure model exists (download on first run if needed)
+            ensure_model_ready(progress_cb=lambda m: self.progress.emit(m))
+
+            # 4) Summarize with streaming logs
             def progress_cb(message: str):
                 self.progress.emit(message)
 
@@ -132,12 +136,12 @@ class SummarizationWorker(QThread):
                 progress_callback=progress_cb,
             )
 
-            # 4) Save TXT
+            # 5) Save TXT
             stem = extracted_path.stem
             txt_path = self.output_dir / f"{stem}_summary.txt"
             txt_path.write_text(summary, encoding="utf-8")
 
-            # 5) Save JSON with metadata
+            # 6) Save JSON with metadata
             json_path = self.output_dir / f"{stem}_summary.json"
             json_data = {
                 "filename": filename,
@@ -151,7 +155,7 @@ class SummarizationWorker(QThread):
                 encoding="utf-8",
             )
 
-            # 6) Done
+            # 7) Done
             self.finished.emit(
                 {
                     "filename": filename,

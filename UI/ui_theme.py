@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QApplication, QWidget
 # Color palette (requested)
 PRIMARY_BLUE = "rgb(0, 51, 102)"
 BG_NEUTRAL = "rgb(240, 240, 240)"
-ACCENT_GOLD = "#ffd700"
+ACCENT_GOLD = "#FFA500"
 TEXT_DARK = "rgb(50, 50, 50)"
 WHITE = "rgb(255, 255, 255)"
 

@@ -2,6 +2,7 @@
 
 import sys
 import os
+import re
 import shutil
 import zipfile
 from pathlib import Path
@@ -23,7 +24,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
 
-from backend.config import OUTPUT_DIR, EXTRACTED_DIR
+from backend.config import OUTPUT_DIR, EXTRACTED_DIR, MODEL_PATH
 from backend.summarizer_worker import ClassificationWorker, SummarizationWorker
 from UI.document_overview_window import DocumentOverviewWindow
 from UI.ui_theme import apply_window_theme
@@ -47,8 +48,14 @@ class ZipUploadWindow(QWidget):
         self.classifier = None
         self.worker = None
 
+        # Model download state (UI only)
+        self.model_downloading = False
+
         self._build_ui()
         apply_window_theme(self)
+
+        # Initialize model status right after UI is built
+        self.update_model_status_label()
 
     def _build_ui(self):
         root = QVBoxLayout()
@@ -59,7 +66,7 @@ class ZipUploadWindow(QWidget):
         self.page.setObjectName("page")
 
         page_layout = QVBoxLayout(self.page)
-        page_layout.setContentsMargins(70, 54, 70, 54)
+        page_layout.setContentsMargins(60, 40, 60, 44)
         page_layout.setSpacing(14)
 
         # Title (smaller + wrap to avoid cropping)
@@ -95,13 +102,57 @@ class ZipUploadWindow(QWidget):
         file_row.addWidget(self.file_label, 1, Qt.AlignVCenter)
         page_layout.addLayout(file_row)
 
+        # Model status card (offline readiness + download progress bar)
+        model_card = QFrame()
+        model_card.setObjectName("card")
+
+        model_layout = QVBoxLayout(model_card)
+        model_layout.setContentsMargins(16, 12, 16, 12)
+        model_layout.setSpacing(8)
+
+        model_title = QLabel("LLM-model status")
+        model_title.setObjectName("sectionTitle")
+        model_title.setFont(QFont("Segoe UI", 12, QFont.Bold))
+        model_layout.addWidget(model_title)
+
+        self.model_status_label = QLabel("")
+        self.model_status_label.setObjectName("fieldLabel")
+        self.model_status_label.setFont(QFont("Segoe UI", 10))
+        self.model_status_label.setWordWrap(True)
+        model_layout.addWidget(self.model_status_label)
+
+        # Small download progress bar (hidden by default)
+        self.model_download_bar = QProgressBar()
+        self.model_download_bar.setObjectName("modelDownloadBar")
+        self.model_download_bar.setMinimum(0)
+        self.model_download_bar.setMaximum(100)
+        self.model_download_bar.setValue(0)
+        self.model_download_bar.setTextVisible(False)
+        self.model_download_bar.setFixedHeight(10)
+        self.model_download_bar.setVisible(False)
+        self.model_download_bar.setStyleSheet("""
+            QProgressBar {
+                border: 1px solid rgba(0, 0, 0, 18);
+                border-radius: 6px;
+                background: rgb(255, 255, 255);
+                padding: 1px;
+            }
+            QProgressBar::chunk {
+                border-radius: 5px;
+                background: #ffd700;
+            }
+        """)
+        model_layout.addWidget(self.model_download_bar)
+
+        page_layout.addWidget(model_card, 0)
+
         # Log area
         self.log_area = QTextEdit()
         self.log_area.setObjectName("input")
         self.log_area.setReadOnly(True)
         self.log_area.setFont(QFont("Segoe UI", 11))
         self.log_area.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.log_area.setMinimumHeight(360)
+        self.log_area.setMinimumHeight(220)
         page_layout.addWidget(self.log_area, 1)
 
         # Bottom row: progress (left) + button (right)
@@ -144,7 +195,7 @@ class ZipUploadWindow(QWidget):
 
         # Wrap page
         wrapper = QVBoxLayout()
-        wrapper.setContentsMargins(26, 22, 26, 26)
+        wrapper.setContentsMargins(18, 14, 18, 18)
         wrapper.addWidget(self.page)
 
         container = QWidget()
@@ -153,7 +204,90 @@ class ZipUploadWindow(QWidget):
         root.addWidget(container)
         self.setLayout(root)
 
+    def _human_size(self, num_bytes: int) -> str:
+        # Convert bytes into a human-readable string.
+        gb = 1024 ** 3
+        mb = 1024 ** 2
+        kb = 1024
+
+        if num_bytes >= gb:
+            return f"{num_bytes / gb:.2f} GB"
+        if num_bytes >= mb:
+            return f"{num_bytes / mb:.1f} MB"
+        if num_bytes >= kb:
+            return f"{num_bytes / kb:.0f} KB"
+        return f"{num_bytes} B"
+
+    def _set_model_download_ui(self, visible: bool, value: int = 0) -> None:
+        self.model_download_bar.setVisible(visible)
+        if visible:
+            self.model_download_bar.setMaximum(100)
+            self.model_download_bar.setValue(max(0, min(100, value)))
+        else:
+            self.model_download_bar.setValue(0)
+
+    def update_model_status_label(self) -> None:
+        # Show model path, size, and offline readiness status.
+        p = Path(MODEL_PATH)
+
+        if p.exists():
+            size_str = self._human_size(p.stat().st_size)
+            offline = "Ja"
+            note = "Model is lokaal beschikbaar. Offline gebruik is mogelijk."
+        else:
+            size_str = "-"
+            offline = "Nee"
+            if self.model_downloading:
+                note = "Model wordt nu gedownload. Dit gebeurt eenmalig."
+            else:
+                note = (
+                    "Model wordt automatisch gedownload bij het starten van de eerste samenvatting. "
+                    "Selecteer een ZIP-bestand en klik op 'Aanmaken' om te beginnen."
+                )
+
+        text = (
+            f"Offline klaar: {offline}\n"
+            f"Bestand: {p.name}\n"
+            f"Grootte: {size_str}\n"
+            f"Pad: {p}\n"
+            f"{note}"
+        )
+
+        self.model_status_label.setText(text)
+
     def log(self, text: str):
+        """
+        Hide noisy 'Downloading model...' lines and render them as a small progress bar
+        in the model status card.
+        """
+
+        # 1) Detect model download start
+        if "LLM model not found. Downloading to:" in text:
+            self.model_downloading = True
+            self._set_model_download_ui(True, 0)
+            self.update_model_status_label()
+            # Do not spam the log with this line
+            return
+
+        # 2) Detect progress lines: "Downloading model... 9% (392.0 MB / 4.07 GB)"
+        m = re.search(r"Downloading model\.\.\.\s*(\d+)%", text)
+        if m:
+            percent = int(m.group(1))
+            self.model_downloading = True
+            self._set_model_download_ui(True, percent)
+            # Do not append these progress lines to the log
+            return
+
+        # 3) Detect model download complete
+        if "Model download complete" in text:
+            self.model_downloading = False
+            self._set_model_download_ui(False, 0)
+            self.update_model_status_label()
+            # Optional: show a single friendly log line
+            self.log_area.append("LLM model download voltooid.")
+            return
+
+        # Default: normal log messages
         self.log_area.append(text)
 
     def select_zip(self):

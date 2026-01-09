@@ -35,12 +35,12 @@ jobs:
         run: |
           pyinstaller forensic_summarizer.spec
 
-      - name: Download GGUF model into .app bundle
-        run: |
-          APP_RESOURCES_DIR="dist/forensic_summarizer.app/Contents/Resources/backend/llm_models"
-          mkdir -p "$APP_RESOURCES_DIR"
-          curl -L -o "$APP_RESOURCES_DIR/Mistral-7B-Instruct-v0.3.Q4_K_M.gguf" \
-            "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.3-GGUF/resolve/main/mistral-7b-instruct-v0.3.Q4_K_M.gguf"
+      # - name: Download GGUF model into .app bundle
+      #   run: |
+      #     APP_RESOURCES_DIR="dist/forensic_summarizer.app/Contents/Resources/backend/llm_models"
+      #     mkdir -p "$APP_RESOURCES_DIR"
+      #     curl -L -o "$APP_RESOURCES_DIR/Mistral-7B-Instruct-v0.3.Q4_K_M.gguf" \
+      #       "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.3-GGUF/resolve/main/mistral-7b-instruct-v0.3.Q4_K_M.gguf"
 
       # --- SIGNING KEYCHAIN SETUP ---
       - name: Import Developer ID certificate (.p12) into temporary keychain
