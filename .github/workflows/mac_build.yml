@@ -19,12 +19,14 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: "3.10"
+          cache: "pip"
 
       - name: Install Python dependencies
         env:
           CT_METAL: 1
         run: |
+          set -euo pipefail
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install -r requirements.txt
           # Reinstall ctransformers from source for Apple Silicon (Metal)
@@ -33,14 +35,26 @@ jobs:
 
       - name: Build .app with PyInstaller
         run: |
+          set -euo pipefail
           pyinstaller forensic_summarizer.spec
 
-      # - name: Download GGUF model into .app bundle
-      #   run: |
-      #     APP_RESOURCES_DIR="dist/forensic_summarizer.app/Contents/Resources/backend/llm_models"
-      #     mkdir -p "$APP_RESOURCES_DIR"
-      #     curl -L -o "$APP_RESOURCES_DIR/Mistral-7B-Instruct-v0.3.Q4_K_M.gguf" \
-      #       "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.3-GGUF/resolve/main/mistral-7b-instruct-v0.3.Q4_K_M.gguf"
+      # --- SANITY CHECKS (size + ensure no GGUF bundled) ---
+      - name: Sanity check build output (size + gguf)
+        run: |
+          set -euo pipefail
+          APP_PATH="dist/forensic_summarizer.app"
+
+          echo "=== App size ==="
+          du -sh "$APP_PATH" || true
+
+          echo "=== File count (app) ==="
+          find "$APP_PATH" -type f | wc -l || true
+
+          echo "=== Binary count (.dylib/.so/.bundle) ==="
+          find "$APP_PATH" -type f \( -name "*.dylib" -o -name "*.so" -o -name "*.bundle" \) | wc -l || true
+
+          echo "=== Search for .gguf inside .app (should be empty) ==="
+          find "$APP_PATH" -name "*.gguf" -print || true
 
       # --- SIGNING KEYCHAIN SETUP ---
       - name: Import Developer ID certificate (.p12) into temporary keychain
@@ -155,18 +169,66 @@ jobs:
           APP_PATH="dist/forensic_summarizer.app"
           ditto -c -k --keepParent "$APP_PATH" "dist/forensic_summarizer-notary.zip"
 
-      - name: Notarize with Apple ID (notarytool)
+          echo "=== Notary zip size ==="
+          du -sh "dist/forensic_summarizer-notary.zip" || true
+
+      - name: Submit to Apple notarization (capture submission id)
+        id: notarize_submit
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
         run: |
           set -euo pipefail
-          xcrun notarytool submit "dist/forensic_summarizer-notary.zip" \
+
+          JSON_OUT="$(xcrun notarytool submit "dist/forensic_summarizer-notary.zip" \
             --apple-id "$APPLE_ID" \
             --password "$APPLE_APP_SPECIFIC_PASSWORD" \
             --team-id "$APPLE_TEAM_ID" \
-            --wait
+            --output-format json)"
+
+          echo "$JSON_OUT"
+
+          SUBMISSION_ID="$(echo "$JSON_OUT" | python -c "import sys,json; print(json.load(sys.stdin).get('id',''))")"
+
+          if [ -z "$SUBMISSION_ID" ]; then
+            echo "ERROR: Could not read submission id from notarytool output."
+            exit 1
+          fi
+
+          echo "submission_id=$SUBMISSION_ID" >> "$GITHUB_OUTPUT"
+          echo "Notary submission id: $SUBMISSION_ID"
+
+      - name: Wait for notarization (timeout + fetch log on failure)
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+        run: |
+          set -euo pipefail
+          SUBMISSION_ID="${{ steps.notarize_submit.outputs.submission_id }}"
+
+          echo "Waiting for notarization to finish (id=$SUBMISSION_ID)..."
+
+          set +e
+          xcrun notarytool wait "$SUBMISSION_ID" \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_APP_SPECIFIC_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" \
+            --timeout 30m
+          RC=$?
+          set -e
+
+          if [ $RC -ne 0 ]; then
+            echo "Notarization did not complete successfully (exit=$RC). Fetching log..."
+            xcrun notarytool log "$SUBMISSION_ID" \
+              --apple-id "$APPLE_ID" \
+              --password "$APPLE_APP_SPECIFIC_PASSWORD" \
+              --team-id "$APPLE_TEAM_ID" || true
+            exit $RC
+          fi
+
+          echo "Notarization accepted."
 
       - name: Staple notarization ticket to .app
         run: |
@@ -181,6 +243,9 @@ jobs:
           APP_PATH="dist/forensic_summarizer.app"
           rm -f "dist/forensic_summarizer.app.zip"
           ditto -c -k --keepParent "$APP_PATH" "dist/forensic_summarizer.app.zip"
+
+          echo "=== Final zip size ==="
+          du -sh "dist/forensic_summarizer.app.zip" || true
 
       # --- RELEASE ---
       - name: Create GitHub Release (draft)
