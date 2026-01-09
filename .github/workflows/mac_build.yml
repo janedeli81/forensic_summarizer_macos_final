@@ -38,7 +38,7 @@ jobs:
           set -euo pipefail
           pyinstaller forensic_summarizer.spec
 
-      # --- SANITY CHECKS (size + ensure no GGUF bundled + bundle structure) ---
+      # --- SANITY CHECKS (size + ensure no GGUF bundled) ---
       - name: Sanity check build output (size + gguf)
         run: |
           set -euo pipefail
@@ -59,11 +59,12 @@ jobs:
           echo "=== App bundle structure (top) ==="
           find "$APP_PATH" -maxdepth 3 -print || true
 
+          echo "=== Contents/MacOS ==="
+          ls -la "$APP_PATH/Contents/MacOS" || true
+
           echo "=== Contents ==="
           ls -la "$APP_PATH/Contents" || true
 
-          echo "=== Contents/MacOS ==="
-          ls -la "$APP_PATH/Contents/MacOS" || true
 
       # --- SIGNING KEYCHAIN SETUP ---
       - name: Import Developer ID certificate (.p12) into temporary keychain
@@ -92,7 +93,6 @@ jobs:
 
           security list-keychains -d user -s "$KEYCHAIN_PATH"
           security default-keychain -s "$KEYCHAIN_PATH"
-          security set-keychain -d user -s "$KEYCHAIN_PATH"
           security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
 
           echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> "$GITHUB_ENV"
@@ -219,7 +219,6 @@ jobs:
           SUBMISSION_ID="${{ steps.notarize_submit.outputs.submission_id }}"
 
           echo "Waiting for notarization to finish (id=$SUBMISSION_ID)..."
-          echo "Wait timeout is set to 3600.0 second(s)."
 
           set +e
           xcrun notarytool wait "$SUBMISSION_ID" \
