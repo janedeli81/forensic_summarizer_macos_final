@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-14
 
     permissions:
       contents: write
@@ -37,7 +37,7 @@ jobs:
           set -euo pipefail
           pyinstaller forensic_summarizer.spec
 
-      - name: Sanity check build output (size + gguf)
+      - name: Sanity check build output (size + gguf + binaries)
         run: |
           set -euo pipefail
           APP_PATH="dist/forensic_summarizer.app"
@@ -202,7 +202,7 @@ jobs:
           path: dist/notary_submission_id.txt
           if-no-files-found: error
 
-      - name: Wait for notarization (retry + timeout)
+      - name: Wait for notarization (poll info)
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
@@ -211,57 +211,49 @@ jobs:
           set -euo pipefail
           SUBMISSION_ID="${{ steps.notarize_submit.outputs.submission_id }}"
 
-          echo "Waiting for notarization to finish (id=$SUBMISSION_ID)..."
+          echo "Polling notarization status (id=$SUBMISSION_ID)..."
 
-          # Try wait up to 3 times in case of transient network issues
-          ATTEMPTS=3
-          for i in $(seq 1 $ATTEMPTS); do
-            echo "Wait attempt $i/$ATTEMPTS..."
-            set +e
-            OUT="$(xcrun notarytool wait "$SUBMISSION_ID" \
+          # Total max wait: 180 minutes, poll every 2 minutes
+          MAX_SECONDS=$((180*60))
+          INTERVAL=120
+          ELAPSED=0
+
+          while [ $ELAPSED -lt $MAX_SECONDS ]; do
+            JSON_INFO="$(xcrun notarytool info "$SUBMISSION_ID" \
               --apple-id "$APPLE_ID" \
               --password "$APPLE_APP_SPECIFIC_PASSWORD" \
               --team-id "$APPLE_TEAM_ID" \
-              --timeout 60m 2>&1)"
-            RC=$?
-            set -e
+              --output-format json)"
 
-            echo "$OUT"
+            echo "$JSON_INFO"
 
-            if [ $RC -eq 0 ]; then
+            STATUS="$(echo "$JSON_INFO" | python -c "import sys,json; print(json.load(sys.stdin).get('status',''))")"
+            echo "Status: $STATUS (elapsed ${ELAPSED}s)"
+
+            if [ "$STATUS" = "Accepted" ]; then
               echo "Notarization accepted."
               exit 0
             fi
 
-            # If network looks offline, sleep and retry
-            if echo "$OUT" | grep -qiE "offline|NSURLErrorDomain|Code=-1009|No network route"; then
-              echo "Transient network issue detected. Sleeping 60s before retry..."
-              sleep 60
-              continue
+            if [ "$STATUS" = "Invalid" ]; then
+              echo "Notarization invalid. Fetching log..."
+              xcrun notarytool log "$SUBMISSION_ID" \
+                --apple-id "$APPLE_ID" \
+                --password "$APPLE_APP_SPECIFIC_PASSWORD" \
+                --team-id "$APPLE_TEAM_ID"
+              exit 1
             fi
 
-            # Otherwise break and fetch log
-            break
+            sleep $INTERVAL
+            ELAPSED=$((ELAPSED + INTERVAL))
           done
 
-          echo "Notarization did not complete successfully. Fetching log (with retries)..."
-
-          # Fetch log up to 3 times (network can fail)
-          for j in 1 2 3; do
-            echo "Log attempt $j/3..."
-            set +e
-            xcrun notarytool log "$SUBMISSION_ID" \
-              --apple-id "$APPLE_ID" \
-              --password "$APPLE_APP_SPECIFIC_PASSWORD" \
-              --team-id "$APPLE_TEAM_ID"
-            LRC=$?
-            set -e
-            if [ $LRC -eq 0 ]; then
-              break
-            fi
-            sleep 30
-          done
-
+          echo "Timed out waiting for notarization after 180 minutes."
+          echo "Fetching log (may fail if still In Progress)..."
+          xcrun notarytool log "$SUBMISSION_ID" \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_APP_SPECIFIC_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" || true
           exit 1
 
       - name: Staple notarization ticket to .app
