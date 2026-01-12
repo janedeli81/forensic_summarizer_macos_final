@@ -49,7 +49,7 @@ def get_llm():
             str(mp.parent),               # model_path_or_repo_id (папка)
             model_file=mp.name,           # ім’я .gguf
             model_type="mistral",
-            gpu_layers=GPU_LAYERS,
+            gpu_layers=0,
             context_length=int(N_CTX),    # <-- безпечно для нових/старих збірок
         )
     else:

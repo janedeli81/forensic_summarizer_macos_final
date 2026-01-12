@@ -30,6 +30,28 @@ from UI.document_overview_window import DocumentOverviewWindow
 from UI.ui_theme import apply_window_theme
 
 
+def _is_macos_zip_artifact(path: Path) -> bool:
+    """
+    Skip macOS ZIP artifacts:
+    - __MACOSX folder
+    - AppleDouble files (._filename)
+    - .DS_Store
+    """
+    try:
+        if "__MACOSX" in path.parts:
+            return True
+    except Exception:
+        pass
+
+    name = path.name
+    if name == ".DS_Store":
+        return True
+    if name.startswith("._"):
+        return True
+
+    return False
+
+
 class ZipUploadWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -50,6 +72,10 @@ class ZipUploadWindow(QWidget):
 
         # Model download state (UI only)
         self.model_downloading = False
+
+        # Controls when to print "Starting summarization..." in correct order
+        self._summ_start_pending = False
+        self._summ_start_logged = False
 
         self._build_ui()
         apply_window_theme(self)
@@ -128,7 +154,7 @@ class ZipUploadWindow(QWidget):
         self.model_download_bar.setMaximum(100)
         self.model_download_bar.setValue(0)
         self.model_download_bar.setTextVisible(False)
-        self.model_download_bar.setFixedHeight(10)
+        self.model_download_bar.setFixedHeight(20)
         self.model_download_bar.setVisible(False)
         self.model_download_bar.setStyleSheet("""
             QProgressBar {
@@ -205,7 +231,6 @@ class ZipUploadWindow(QWidget):
         self.setLayout(root)
 
     def _human_size(self, num_bytes: int) -> str:
-        # Convert bytes into a human-readable string.
         gb = 1024 ** 3
         mb = 1024 ** 2
         kb = 1024
@@ -226,8 +251,30 @@ class ZipUploadWindow(QWidget):
         else:
             self.model_download_bar.setValue(0)
 
+    def _model_exists(self) -> bool:
+        try:
+            p = Path(MODEL_PATH)
+            return p.exists() and p.stat().st_size > 10 * 1024 * 1024
+        except Exception:
+            return False
+
+    def _maybe_log_start_summarization(self) -> None:
+        """
+        Print "Starting summarization..." exactly once, and only when allowed.
+        - If model already exists: print immediately after classification.
+        - If model is being downloaded: print right after "LLM model download voltooid."
+        """
+        if not self._summ_start_pending:
+            return
+        if self._summ_start_logged:
+            self._summ_start_pending = False
+            return
+
+        self._summ_start_logged = True
+        self._summ_start_pending = False
+        self.log_area.append("\nStarting summarization...\n")
+
     def update_model_status_label(self) -> None:
-        # Show model path, size, and offline readiness status.
         p = Path(MODEL_PATH)
 
         if p.exists():
@@ -261,12 +308,19 @@ class ZipUploadWindow(QWidget):
         in the model status card.
         """
 
+        # If worker emits this line, avoid duplicates with our UI-controlled one.
+        if text.strip() == "Starting summarization...":
+            if not self._summ_start_logged:
+                self._summ_start_logged = True
+                self._summ_start_pending = False
+                self.log_area.append("\nStarting summarization...\n")
+            return
+
         # 1) Detect model download start
         if "LLM model not found. Downloading to:" in text:
             self.model_downloading = True
             self._set_model_download_ui(True, 0)
             self.update_model_status_label()
-            # Do not spam the log with this line
             return
 
         # 2) Detect progress lines: "Downloading model... 9% (392.0 MB / 4.07 GB)"
@@ -275,7 +329,6 @@ class ZipUploadWindow(QWidget):
             percent = int(m.group(1))
             self.model_downloading = True
             self._set_model_download_ui(True, percent)
-            # Do not append these progress lines to the log
             return
 
         # 3) Detect model download complete
@@ -283,8 +336,9 @@ class ZipUploadWindow(QWidget):
             self.model_downloading = False
             self._set_model_download_ui(False, 0)
             self.update_model_status_label()
-            # Optional: show a single friendly log line
             self.log_area.append("LLM model download voltooid.")
+            # Now it's safe to show "Starting summarization..." (if we were waiting for download)
+            self._maybe_log_start_summarization()
             return
 
         # Default: normal log messages
@@ -305,6 +359,10 @@ class ZipUploadWindow(QWidget):
 
         self._set_ui_busy(True)
 
+        # Reset start message state for a new run
+        self._summ_start_pending = False
+        self._summ_start_logged = False
+
         for folder in [self.output_dir, self.extracted_dir]:
             if folder.exists():
                 shutil.rmtree(folder)
@@ -317,8 +375,19 @@ class ZipUploadWindow(QWidget):
 
             self.all_files = []
             for root, _, files in os.walk(self.extracted_dir):
+                root_path = Path(root)
+
+                # Skip __MACOSX folder if present
+                if "__MACOSX" in root_path.parts:
+                    continue
+
                 for filename in files:
-                    full_path = Path(root) / filename
+                    full_path = root_path / filename
+
+                    # Skip AppleDouble and other macOS artifacts
+                    if _is_macos_zip_artifact(full_path):
+                        continue
+
                     self.all_files.append(full_path)
 
             if not self.all_files:
@@ -360,7 +429,13 @@ class ZipUploadWindow(QWidget):
         self.log("\nDetected document types:")
         for item in results:
             self.log(f" • {item['filename']}  →  {item['doc_type']}")
-        self.log("\nStarting summarization...\n")
+
+        # Decide when to show "Starting summarization..."
+        self._summ_start_pending = True
+        if self._model_exists() and not self.model_downloading:
+            # Model is already available: show immediately
+            self._maybe_log_start_summarization()
+        # else: wait until "Model download complete" is observed in log()
 
         self.progress_bar.setMaximum(len(self.all_files))
         self.progress_bar.setValue(0)
