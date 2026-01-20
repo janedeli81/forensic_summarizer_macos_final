@@ -1,0 +1,179 @@
+{
+  "version": 1,
+  "updated_at": "2026-01-20T16:32:44",
+  "user": {
+    "email": "лолролро"
+  },
+  "model": {
+    "name": "Mistral-7B-Instruct-v0.3-Q4_K_M.gguf",
+    "status": "ready",
+    "path": "C:\\Users\\38098\\AppData\\Roaming\\ForensicSummarizer\\llm_models\\Mistral-7B-Instruct-v0.3-Q4_K_M.gguf",
+    "last_checked_at": null,
+    "error_message": ""
+  },
+  "case": {
+    "case_id": "2026-01-20_163205_d01da1",
+    "case_dir": "cases\\2026-01-20_163205_d01da1",
+    "source_zip_path": "C:\\Users\\38098\\Desktop\\UPWORK\\archives\\Archief 8.zip",
+    "extracted_dir": "cases\\2026-01-20_163205_d01da1\\extracted",
+    "summaries_dir": "cases\\2026-01-20_163205_d01da1\\summaries",
+    "final_dir": "cases\\2026-01-20_163205_d01da1\\final",
+    "selected_zip_path": "cases\\2026-01-20_163205_d01da1\\selected\\selected_documents.zip",
+    "final_report_path": "cases\\2026-01-20_163205_d01da1\\final\\final_report.pdf",
+    "archive_created_at": "2026-01-20T16:32:44"
+  },
+  "documents": [
+    {
+      "doc_id": "d722a043066e4ef2bafab4290deecd03",
+      "original_name": "PJ!.pdf",
+      "source_path": "cases\\2026-01-20_163205_d01da1\\extracted\\PJ!.pdf",
+      "file_ext": "pdf",
+      "detected_type": "PJ",
+      "detected_confidence": null,
+      "type_override": "Observatieverslag",
+      "selected": true,
+      "status": "queued",
+      "summary": {
+        "txt_path": null,
+        "json_path": null,
+        "updated_at": null,
+        "error_message": ""
+      },
+      "error_message": ""
+    },
+    {
+      "doc_id": "1604b49cdf2148c991a1195eea43001f",
+      "original_name": "Recl6.pdf",
+      "source_path": "cases\\2026-01-20_163205_d01da1\\extracted\\Recl6.pdf",
+      "file_ext": "pdf",
+      "detected_type": "UJD",
+      "detected_confidence": null,
+      "type_override": "TLL rapport",
+      "selected": true,
+      "status": "queued",
+      "summary": {
+        "txt_path": null,
+        "json_path": null,
+        "updated_at": null,
+        "error_message": ""
+      },
+      "error_message": ""
+    },
+    {
+      "doc_id": "6202e3fc94904303a8805e91104ced50",
+      "original_name": "reclass231125.pdf",
+      "source_path": "cases\\2026-01-20_163205_d01da1\\extracted\\reclass231125.pdf",
+      "file_ext": "pdf",
+      "detected_type": "RECLASS",
+      "detected_confidence": null,
+      "type_override": "",
+      "selected": false,
+      "status": "skipped",
+      "summary": {
+        "txt_path": null,
+        "json_path": null,
+        "updated_at": null,
+        "error_message": ""
+      },
+      "error_message": ""
+    },
+    {
+      "doc_id": "256e8e2c321545f69ea9d88c61a5f94a",
+      "original_name": "Reclassering2.pdf",
+      "source_path": "cases\\2026-01-20_163205_d01da1\\extracted\\Reclassering2.pdf",
+      "file_ext": "pdf",
+      "detected_type": "RECLASS",
+      "detected_confidence": null,
+      "type_override": "",
+      "selected": false,
+      "status": "skipped",
+      "summary": {
+        "txt_path": null,
+        "json_path": null,
+        "updated_at": null,
+        "error_message": ""
+      },
+      "error_message": ""
+    },
+    {
+      "doc_id": "57ee067925b54dec83064b62879d16a7",
+      "original_name": "TLL1.pdf",
+      "source_path": "cases\\2026-01-20_163205_d01da1\\extracted\\TLL1.pdf",
+      "file_ext": "pdf",
+      "detected_type": "TLL",
+      "detected_confidence": null,
+      "type_override": "",
+      "selected": true,
+      "status": "queued",
+      "summary": {
+        "txt_path": null,
+        "json_path": null,
+        "updated_at": null,
+        "error_message": ""
+      },
+      "error_message": ""
+    },
+    {
+      "doc_id": "47a78af62674415ea8c7ecd71aad13d7",
+      "original_name": "UJD1.pdf",
+      "source_path": "cases\\2026-01-20_163205_d01da1\\extracted\\UJD1.pdf",
+      "file_ext": "pdf",
+      "detected_type": "UJD",
+      "detected_confidence": null,
+      "type_override": "",
+      "selected": true,
+      "status": "queued",
+      "summary": {
+        "txt_path": null,
+        "json_path": null,
+        "updated_at": null,
+        "error_message": ""
+      },
+      "error_message": ""
+    },
+    {
+      "doc_id": "c5151ee406534e13bcacadf85f6c8e5c",
+      "original_name": "VC2.pdf",
+      "source_path": "cases\\2026-01-20_163205_d01da1\\extracted\\VC2.pdf",
+      "file_ext": "pdf",
+      "detected_type": "PJ",
+      "detected_confidence": null,
+      "type_override": "",
+      "selected": false,
+      "status": "skipped",
+      "summary": {
+        "txt_path": null,
+        "json_path": null,
+        "updated_at": null,
+        "error_message": ""
+      },
+      "error_message": ""
+    },
+    {
+      "doc_id": "fc0a3fe7c5df408ab6143acd6565b0ce",
+      "original_name": "VD3.pdf",
+      "source_path": "cases\\2026-01-20_163205_d01da1\\extracted\\VD3.pdf",
+      "file_ext": "pdf",
+      "detected_type": "UJD",
+      "detected_confidence": null,
+      "type_override": "",
+      "selected": false,
+      "status": "skipped",
+      "summary": {
+        "txt_path": null,
+        "json_path": null,
+        "updated_at": null,
+        "error_message": ""
+      },
+      "error_message": ""
+    }
+  ],
+  "settings": {
+    "language": "nl",
+    "output_formats": [
+      "txt",
+      "json",
+      "pdf"
+    ]
+  }
+}

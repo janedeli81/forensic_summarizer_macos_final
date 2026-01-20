@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "updated_at": "2026-01-20T15:20:55",
+  "user": {
+    "email": "test@example.com"
+  },
+  "model": {
+    "name": "",
+    "status": "ready",
+    "path": null,
+    "last_checked_at": null,
+    "error_message": ""
+  },
+  "case": {
+    "case_id": "2026-01-20_152055_53095d",
+    "case_dir": "cases\\2026-01-20_152055_53095d",
+    "source_zip_path": "dummy.zip",
+    "extracted_dir": "cases\\2026-01-20_152055_53095d\\extracted",
+    "summaries_dir": "cases\\2026-01-20_152055_53095d\\summaries",
+    "final_dir": "cases\\2026-01-20_152055_53095d\\final",
+    "selected_zip_path": "cases\\2026-01-20_152055_53095d\\selected\\selected_documents.zip",
+    "final_report_path": "cases\\2026-01-20_152055_53095d\\final\\final_report.pdf",
+    "archive_created_at": null
+  },
+  "documents": [
+    {
+      "doc_id": "b876daf9d03b4b708bf2ffdd44f56b1f",
+      "original_name": "doc1.pdf",
+      "source_path": "cases\\2026-01-20_152055_53095d\\extracted\\doc1.pdf",
+      "file_ext": "pdf",
+      "detected_type": "PV",
+      "detected_confidence": null,
+      "type_override": "",
+      "selected": true,
+      "status": "detected",
+      "summary": {
+        "txt_path": null,
+        "json_path": null,
+        "updated_at": null,
+        "error_message": ""
+      },
+      "error_message": ""
+    }
+  ],
+  "settings": {
+    "language": "nl",
+    "output_formats": [
+      "txt",
+      "json",
+      "pdf"
+    ]
+  }
+}
